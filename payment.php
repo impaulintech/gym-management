@@ -41,33 +41,24 @@ if (isset($_GET['rid'])) {
 		</div>
 		<div class="col-md-6">
 			<large><b>New Payment</b></large>
-			<form id="manage_payment" method="POST">
+			<form id="manage_payment">
 				<input type="hidden" name="registration_id" value="<?php echo $id ?>">
 				<div class="form-group">
-					<p>Plan Membership Fee: <b class="float-right"><?php echo ($pcount <= 0) ? number_format($pamount, 2) . ' (One-time amount only)' : 'Paid Already' ?></b></p>
-					<p>Package Amount: <b class="float-right"><?php echo number_format($ppamount, 2) ?></b></p>
-					<p>Trainer Fee: <b class="float-right"><?php echo number_format($tf) ?></b></p>
+					<p>Plan Membership Fee: </i> <b class="float-right"><?php echo ($pcount <= 0) ? number_format($pamount, 2) . ' (One-time amount only)' : 'Paid Already' ?></b></p>
+					<p>Package Amount: </i> <b class="float-right"><?php echo number_format($ppamount, 2) ?></b></p>
+					<p>Trainer Fee: </i> <b class="float-right"><?php echo number_format($tf) ?></b></p>
 				</div>
 				<hr>
 				<div class="form-group">
-					<p>Amount Payable: <b class="float-right"><?php echo ($pcount <= 0) ? number_format(($ppamount + $tf + $pamount), 2) : number_format(($ppamount + $tf), 2) ?></b></p>
+					<p>Amount Payable: </i> <b class="float-right"><?php echo ($pcount <= 0) ? number_format(($ppamount + $tf + $pamount), 2) : number_format(($ppamount + $tf), 2) ?></b></p>
 				</div>
 				<div class="form-group">
 					<label for="" class="control-label"> Amount</label>
 					<input type="text" class="form-control" id="amount" name="amount"
+						oninput="validateAmount()"
 						placeholder="<?php echo ($pcount <= 0) ? number_format(($ppamount + $tf + $pamount), 2) : number_format(($ppamount + $tf), 2) ?>"
-						value="<?php echo isset($_POST['amount']) ? htmlspecialchars($_POST['amount']) : ''; ?>">
-					<?php if ($_SERVER["REQUEST_METHOD"] == "POST"): ?>
-						<?php
-						$expected_amount = ($pcount <= 0) ? ($ppamount + $tf + $pamount) : ($ppamount + $tf);
-						if (isset($_POST['amount'])) {
-							$entered_amount = str_replace(',', '', $_POST['amount']); // Remove commas
-							if (number_format((float)$expected_amount, 2) != number_format((float)$entered_amount, 2)): ?>
-								<span style="color:red;">The amount must match the total value!</span>
-						<?php endif;
-						}
-						?>
-					<?php endif; ?>
+						data-expected-value="<?php echo ($pcount <= 0) ? number_format(($ppamount + $tf + $pamount), 2) : number_format(($ppamount + $tf), 2) ?>">
+					<span id="error-message" style="color:red; display:none;">The amount must match the total value!</span>
 				</div>
 
 				<div class="form-group">
@@ -75,11 +66,31 @@ if (isset($_GET['rid'])) {
 					<textarea class="form-control" name="remarks"></textarea>
 				</div>
 				<div class="form-group">
-					<button class="btn btn-primary" type="submit">Save Payment</button>
+					<button id="submit-btn" disabled class="btn btn-primary">Save Payment</button>
 				</div>
+
+				<script>
+					function validateAmount() {
+						const amountInput = document.getElementById('amount');
+						let expectedValue = amountInput.getAttribute('data-expected-value');
+						const submitButton = document.getElementById('submit-btn');
+						let errorMessage = document.getElementById('error-message');
+						expectedValue = expectedValue.replace(/,/g, '');
+						const enteredAmount = amountInput.value.replace(/,/g, '');
+
+						if (parseFloat(enteredAmount) !== parseFloat(expectedValue)) {
+							errorMessage.style.display = 'inline';
+							submitButton.disabled = true;
+							return false;
+						} else {
+							errorMessage.style.display = 'none';
+							submitButton.disabled = false;
+							return true;
+						}
+					}
+				</script>
 			</form>
 		</div>
-
 	</div>
 </div>
 <div class="modal-footer display">
